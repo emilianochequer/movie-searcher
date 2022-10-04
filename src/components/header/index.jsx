@@ -1,13 +1,16 @@
+import { useAppContext } from "../../context/AppContext";
 import InputSearcher from "../inputSearcher";
 
-export default function Header({
-  searchTerm,
-  setIsSearching,
-  setResults,
-  setSearchTerm,
-  isSearching,
-  results
-}) {
+export default function Header() {
+  const {
+    searchTerm,
+    setIsSearching,
+    setResults,
+    setSearchTerm,
+    isSearching,
+    results,
+    authenticated,
+  } = useAppContext();
   return (
     <header>
       <div
@@ -30,16 +33,18 @@ export default function Header({
                 <h1 className="text-white font-semibold text-5xl">
                   Movie Searcher.
                 </h1>
-                <div>
-                  <InputSearcher
-                    searchTerm={searchTerm}
-                    setIsSearching={setIsSearching}
-                    setResults={setResults}
-                    setSearchTerm={setSearchTerm}
-                    isSearching={isSearching}
-                    results={results}
-                  />
-                </div>
+                {authenticated && (
+                  <div>
+                    <InputSearcher
+                      searchTerm={searchTerm}
+                      setIsSearching={setIsSearching}
+                      setResults={setResults}
+                      setSearchTerm={setSearchTerm}
+                      isSearching={isSearching}
+                      results={results}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

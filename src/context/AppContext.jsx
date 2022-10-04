@@ -1,14 +1,22 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import MovieList from "./components/movieList";
-import Modal from "./components/movieDetail";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useReducer,
+  useEffect,
+} from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
-function App() {
+export const AppContext = createContext(null);
+
+export const AppProvider = ({ children }) => {
   // State and setters for ...
   // Search term
   const [searchTerm, setSearchTerm] = useState("");
   // API search results
   const [results, setResults] = useState([]);
+  // Searching status (whether there is pending API request)
+  const [isSearching, setIsSearching] = useState(false);
   // Api search result by rating
   const [rating, setRatingSearch] = useState(null);
   const [stars] = useState([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -18,14 +26,11 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [movieSelected, setMovieSelected] = useState(null);
   const [genres, setGenres] = useState([]);
-
-  const changeRating = (newRating) => {
-    setRatingSearch(newRating);
-  };
-
-  const hoverRating = (rating) => {
-    setHovered(rating);
-  };
+  const [authenticated, setAuthenticated] = useLocalStorage(
+    "authenticated",
+    false
+  );
+  const [favorites, setFavorites] = useLocalStorage("favorites", []);
 
   useEffect(() => {
     const apiKey = "12fe980d106ff5328e1ed3efd66102d5";
@@ -48,38 +53,46 @@ function App() {
         .then((r) => r.json())
         .then((r) => setResults(r.results))
         .catch((error) => {
-          console.error(error);
           return [];
         });
     }
   }, [searchTerm]);
 
-  return (
-    <div className="App">
-      <MovieList
-        results={results}
-        rating={rating}
-        setRatingSearch={setRatingSearch}
-        hovered={hovered}
-        selectedIcon={selectedIcon}
-        deselectedIcon={deselectedIcon}
-        setHovered={setHovered}
-        setSelectedIcon={setSelectedIcon}
-        hoverRating={hoverRating}
-        changeRating={changeRating}
-        setDeselectedIcon={setDeselectedIcon}
-        stars={stars}
-        setMovieSelected={setMovieSelected}
-        setShowModal={setShowModal}
-      />
-      <Modal
-        movieSelected={movieSelected}
-        showModal={showModal}
-        setShowModal={setShowModal}
-        genres={genres}
-      />
-    </div>
-  );
-}
+  const context = {
+    searchTerm,
+    setSearchTerm,
+    results,
+    setResults,
+    isSearching,
+    setIsSearching,
+    rating,
+    setRatingSearch,
+    stars,
+    hovered,
+    setHovered,
+    selectedIcon,
+    setSelectedIcon,
+    deselectedIcon,
+    setDeselectedIcon,
+    showModal,
+    setShowModal,
+    movieSelected,
+    setMovieSelected,
+    genres,
+    setGenres,
+    authenticated,
+    setAuthenticated,
+    favorites,
+    setFavorites,
+  };
 
-export default App;
+  return <AppContext.Provider value={context}>{children}</AppContext.Provider>;
+};
+
+export function useAppContext() {
+  const context = AppContext;
+  if (!context) {
+    console.error("There is an error with explorer context");
+  }
+  return useContext(context);
+}
